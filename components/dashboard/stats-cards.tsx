@@ -47,7 +47,16 @@ const stats = [
   },
 ];
 
-const achievements = [
+type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
+
+const achievements: {
+  name: string;
+  description: string;
+  rarity: Rarity;
+  earned: boolean;
+  progress?: number;
+  total?: number;
+}[] = [
   {
     name: 'Kommunikationsexperte',
     description: '10 Simulationen erfolgreich abgeschlossen',
@@ -70,7 +79,7 @@ const achievements = [
   },
 ];
 
-const rarityColors = {
+const rarityColors: Record<Rarity, string> = {
   common: 'bg-gray-500/20 text-gray-300',
   rare: 'bg-blue-500/20 text-blue-300',
   epic: 'bg-purple-500/20 text-purple-300',
@@ -189,10 +198,10 @@ export function StatsCards() {
                     )}
                   </div>
                 </div>
-                {!achievement.earned && achievement.progress && (
+                {!achievement.earned && achievement.progress && achievement.total && (
                   <div className="mt-2">
-                    <Progress 
-                      value={(achievement.progress / achievement.total) * 100} 
+                    <Progress
+                      value={(achievement.progress / achievement.total) * 100}
                       className="h-1"
                     />
                   </div>
