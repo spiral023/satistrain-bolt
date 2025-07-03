@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
-import { coursesApi } from '@/lib/api/courses';
+import { coursesApi, EnrollmentWithCourse } from '@/lib/api/courses';
 import { Database } from '@/lib/database.types';
 import {
   BookOpen,
@@ -27,13 +27,10 @@ import {
 } from 'lucide-react';
 
 type Course = Database['public']['Tables']['course']['Row'];
-type Enrollment = Database['public']['Tables']['enrollment']['Row'] & {
-  course: Course;
-};
 
 export default function CoursesPage() {
   const { user } = useAuth();
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [enrollments, setEnrollments] = useState<EnrollmentWithCourse[]>([]);
   const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,9 +51,9 @@ export default function CoursesPage() {
       ]);
 
       setEnrollments(userEnrollments);
-      
+
       // Filter out courses user is already enrolled in
-      const enrolledCourseIds = userEnrollments.map(e => e.course_id);
+      const enrolledCourseIds = userEnrollments.map(e => e.course.id);
       const available = allCourses.filter(course => !enrolledCourseIds.includes(course.id));
       setAvailableCourses(available);
     } catch (error) {

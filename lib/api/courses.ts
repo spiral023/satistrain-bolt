@@ -7,6 +7,10 @@ type Lesson = Database['public']['Tables']['lesson']['Row'];
 type Enrollment = Database['public']['Tables']['enrollment']['Row'];
 type Progress = Database['public']['Tables']['progress']['Row'];
 
+export type EnrollmentWithCourse = Enrollment & {
+  course: Course;
+};
+
 export const coursesApi = {
   // Get all active courses
   async getCourses(): Promise<Course[]> {
@@ -40,7 +44,7 @@ export const coursesApi = {
   },
 
   // Get user's enrollments
-  async getUserEnrollments(userId: string): Promise<Enrollment[]> {
+  async getUserEnrollments(userId: string): Promise<EnrollmentWithCourse[]> {
     const { data, error } = await supabase
       .from('enrollment')
       .select(`
