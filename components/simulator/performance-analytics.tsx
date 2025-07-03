@@ -356,7 +356,7 @@ export function PerformanceAnalytics({ stats }: PerformanceAnalyticsProps) {
                     <div>
                       <h4 className="font-medium">{goal.title}</h4>
                       <p className="text-sm text-muted-foreground">
-                        Belohnung: {goal.reward}
+                        Belohnung: &quot;{goal.reward}&quot;
                       </p>
                     </div>
                     <Badge variant="outline">
@@ -397,7 +397,7 @@ export function PerformanceAnalytics({ stats }: PerformanceAnalyticsProps) {
             <div className="p-3 bg-white/5 rounded-lg">
               <h4 className="font-medium text-blue-500 mb-1">Neue Kategorien erkunden</h4>
               <p className="text-sm text-muted-foreground">
-                Versuchen Sie Szenarien in der Kategorie "Logistik" für eine ausgewogenere Erfahrung.
+                Versuchen Sie Szenarien in der Kategorie &quot;Logistik&quot; für eine ausgewogenere Erfahrung.
               </p>
             </div>
             <div className="p-3 bg-white/5 rounded-lg">

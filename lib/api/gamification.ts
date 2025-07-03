@@ -73,7 +73,7 @@ export const gamificationApi = {
     if (badgeError) throw badgeError;
 
     const badgePoints = (badgeData || []).reduce((total, award) => {
-      return total + (award.badge?.points_required || 0);
+      return total + ((award as any).badge?.points_required || 0);
     }, 0);
 
     return progressPoints + badgePoints;

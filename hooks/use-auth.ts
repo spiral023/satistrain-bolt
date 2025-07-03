@@ -20,7 +20,7 @@ export function useAuth() {
               id: session.user.id,
               email: session.user.email!,
               locale: session.user.user_metadata?.locale || 'de',
-              deleted_at: null,
+              deleted_at: undefined,
               created_at: session.user.created_at,
               updated_at: session.user.updated_at || session.user.created_at,
             });
@@ -45,7 +45,7 @@ export function useAuth() {
             id: authUser.id,
             email: authUser.email,
             locale: authUser.locale || 'de',
-            deleted_at: null,
+            deleted_at: undefined,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });

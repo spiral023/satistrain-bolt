@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from '@/components/navigation/sidebar';
 import { CourseGrid } from '@/components/courses/course-grid';
 import { CourseFilters } from '@/components/courses/course-filters';
@@ -36,17 +36,12 @@ export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
 
-  useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [user]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    if (!user) return;
     try {
       setLoading(true);
       const [userEnrollments, allCourses] = await Promise.all([
-        coursesApi.getUserEnrollments(user!.id),
+        coursesApi.getUserEnrollments(user.id),
         coursesApi.getCourses(),
       ]);
 
@@ -61,7 +56,11 @@ export default function CoursesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleEnroll = async (courseId: string) => {
     if (!user) return;

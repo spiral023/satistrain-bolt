@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/navigation/sidebar';
 import { CourseHeader } from '@/components/courses/course-header';
@@ -21,20 +21,15 @@ export default function CourseDetailPage() {
   const [loading, setLoading] = useState(true);
   const [currentLesson, setCurrentLesson] = useState<any>(null);
 
-  useEffect(() => {
-    if (user && id) {
-      loadCourseData();
-    }
-  }, [user, id]);
-
-  const loadCourseData = async () => {
+  const loadCourseData = useCallback(async () => {
+    if (!user || !id) return;
     try {
       setLoading(true);
       
       const [courseDetails, userEnrollments, courseProgress] = await Promise.all([
         coursesApi.getCourseDetails(id as string),
-        coursesApi.getUserEnrollments(user!.id),
-        coursesApi.getCourseProgress(user!.id, id as string),
+        coursesApi.getUserEnrollments(user.id),
+        coursesApi.getCourseProgress(user.id, id as string),
       ]);
 
       setCourse(courseDetails);
@@ -56,7 +51,11 @@ export default function CourseDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, id]);
+
+  useEffect(() => {
+    loadCourseData();
+  }, [loadCourseData]);
 
   const handleLessonComplete = async (lessonId: string, score?: number) => {
     if (!user) return;

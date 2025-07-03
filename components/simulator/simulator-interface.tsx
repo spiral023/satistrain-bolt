@@ -88,7 +88,7 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout>();
 
-  const aiPersonality = aiPersonalities[scenario?.personality || 'polite'];
+  const aiPersonality = aiPersonalities[scenario?.personality as keyof typeof aiPersonalities || 'polite'];
 
   useEffect(() => {
     // Initialize conversation
@@ -181,7 +181,7 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
       ],
     };
 
-    const personalityResponses = responses[scenario?.personality || 'polite'];
+    const personalityResponses = responses[scenario?.personality as keyof typeof responses || 'polite'];
     return personalityResponses[Math.floor(Math.random() * personalityResponses.length)];
   };
 

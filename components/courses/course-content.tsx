@@ -189,9 +189,7 @@ export function CourseContent({ lesson, onComplete }: CourseContentProps) {
                   
                   <h4>Praktische Anwendung</h4>
                   <p>
-                    Verwenden Sie Phrasen wie "Ich verstehe, dass das frustrierend für Sie sein muss" 
-                    oder "Lassen Sie mich sehen, wie ich Ihnen am besten helfen kann". 
-                    Diese zeigen Verständnis und Bereitschaft zur Problemlösung.
+                    Verwenden Sie Phrasen wie &quot;Ich verstehe, dass das frustrierend für Sie sein muss&quot; oder &quot;Lassen Sie mich sehen, wie ich Ihnen am besten helfen kann&quot;. Diese zeigen Verständnis und Bereitschaft zur Problemlösung.
                   </p>
                   
                   <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4 my-6">
