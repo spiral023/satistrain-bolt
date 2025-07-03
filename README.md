@@ -2,8 +2,14 @@
 
 Eine moderne, interaktive Lernplattform zur Verbesserung von Kundenservice-Fähigkeiten durch KI-gestützte Simulationen, Gamification und personalisierte Lernpfade.
 
+## 🌐 Live Demo
+
+**Website**: [https://satistrain.sp23.online/](https://satistrain.sp23.online/)
+
 ## 📋 Inhaltsverzeichnis
 
+- [Live Demo](#live-demo)
+- [Screenshots](#screenshots)
 - [Überblick](#überblick)
 - [Hauptfunktionen](#hauptfunktionen)
 - [Technische Architektur](#technische-architektur)
@@ -14,6 +20,29 @@ Eine moderne, interaktive Lernplattform zur Verbesserung von Kundenservice-Fähi
 - [API-Endpunkte](#api-endpunkte)
 - [Deployment](#deployment)
 - [Mitwirken](#mitwirken)
+
+## 📸 Screenshots
+
+### Dashboard und Übersicht
+![Dashboard](https://sp23.online/satistrain/screenshots/1.png)
+
+### Kurse und Lernpfade
+![Kurse](https://sp23.online/satistrain/screenshots/2.png)
+
+### KI-Simulator Interface
+![Simulator](https://sp23.online/satistrain/screenshots/3.png)
+
+### Achievements und Gamification
+![Achievements](https://sp23.online/satistrain/screenshots/4.png)
+
+### Leaderboard und Wettbewerbe
+![Leaderboard](https://sp23.online/satistrain/screenshots/5.png)
+
+### Mikro-Lernen
+![Mikro-Lernen](https://sp23.online/satistrain/screenshots/6.png)
+
+### Zertifikate und Fortschritt
+![Zertifikate](https://sp23.online/satistrain/screenshots/7.png)
 
 ## 🌟 Überblick
 
