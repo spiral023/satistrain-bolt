@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Providers } from './providers';
 import { AuthProvider } from '@/components/auth/auth-provider';
+import StagewiseWrapper from '@/components/stagewise-wrapper';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -22,6 +23,7 @@ export default function RootLayout({
         <Providers>
           <AuthProvider>
             {children}
+            <StagewiseWrapper />
           </AuthProvider>
         </Providers>
       </body>
