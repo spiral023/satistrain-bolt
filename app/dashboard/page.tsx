@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Sidebar } from '@/components/navigation/sidebar';
 import { StatsCards } from '@/components/dashboard/stats-cards';
 import { ActivityFeed } from '@/components/dashboard/activity-feed';
@@ -97,23 +98,24 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                   {quickActions.map((action) => (
-                    <Button
-                      key={action.title}
-                      variant="ghost"
-                      className="h-auto p-4 flex flex-col items-start gap-3 hover:bg-muted/50"
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <div className={`p-2 rounded-lg ${action.bgColor}`}>
-                          <action.icon className={`h-5 w-5 ${action.color}`} />
+                    <Link key={action.title} href={action.href}>
+                      <Button
+                        variant="ghost"
+                        className="h-auto p-4 flex flex-col items-start gap-3 hover:bg-muted/50 w-full"
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          <div className={`p-2 rounded-lg ${action.bgColor}`}>
+                            <action.icon className={`h-5 w-5 ${action.color}`} />
+                          </div>
+                          <div className="text-left">
+                            <p className="font-medium">{action.title}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {action.description}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-left">
-                          <p className="font-medium">{action.title}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {action.description}
-                          </p>
-                        </div>
-                      </div>
-                    </Button>
+                      </Button>
+                    </Link>
                   ))}
                 </div>
               </CardContent>
