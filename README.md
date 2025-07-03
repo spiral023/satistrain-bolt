@@ -380,4 +380,8 @@ Bei Fragen oder Problemen:
 
 ---
 
+<<<<<<< HEAD
 **Entwickelt mit ❤️ für besseren Kundenservice**
+=======
+**Entwickelt mit ❤️ für besseren Kundenservice**
+>>>>>>> c62b08132d8c62d803af4fe71cb43c8f375c8f47
