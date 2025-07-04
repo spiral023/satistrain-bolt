@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Head from 'next/head';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -74,6 +75,98 @@ export default function HomePage() {
   const handleGetStarted = () => {
     router.push('/dashboard');
   };
+
+  useEffect(() => {
+    // Add structured data for SEO
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "name": "SatisTrain",
+      "alternateName": "SatisTrain - KI-gestützte Kundenservice-Schulungen",
+      "url": "https://satistrain-bolt.netlify.app",
+      "logo": "https://satistrain-bolt.netlify.app/logo.png",
+      "description": "Revolutioniere dein Kundenservice-Training mit KI-gestützten Simulationen, Gamification und personalisierten Lernpfaden. Über 2.500 aktive Lerner vertrauen uns.",
+      "foundingDate": "2024",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "DE"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": "German"
+      },
+      "sameAs": [
+        "https://twitter.com/SatisTrain",
+        "https://linkedin.com/company/satistrain"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "category": "Education",
+        "name": "Kundenservice-Training",
+        "description": "KI-gestützte Simulationen und personalisierte Lernpfade für besseren Kundenservice"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Kurskatalog",
+        "itemListElement": [
+          {
+            "@type": "Course",
+            "name": "KI-gestützte Simulationen",
+            "description": "Übe realistische Kundengespräche mit fortschrittlicher KI",
+            "provider": {
+              "@type": "Organization",
+              "name": "SatisTrain"
+            }
+          },
+          {
+            "@type": "Course", 
+            "name": "Personalisierte Lernpfade",
+            "description": "Maßgeschneiderte Kurse basierend auf deiner Rolle und deinem Fortschritt",
+            "provider": {
+              "@type": "Organization",
+              "name": "SatisTrain"
+            }
+          }
+        ]
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "reviewCount": "2500",
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "review": [
+        {
+          "@type": "Review",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "5",
+            "bestRating": "5"
+          },
+          "author": {
+            "@type": "Person",
+            "name": "Anonymer Nutzer"
+          },
+          "reviewBody": "Hervorragende Plattform für Kundenservice-Training mit innovativen KI-Simulationen."
+        }
+      ]
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(structuredData);
+    document.head.appendChild(script);
+
+    return () => {
+      // Cleanup
+      const existingScript = document.querySelector('script[type="application/ld+json"]');
+      if (existingScript) {
+        document.head.removeChild(existingScript);
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">

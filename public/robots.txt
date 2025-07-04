@@ -1,0 +1,32 @@
+# Robots.txt for SatisTrain
+# https://satistrain-bolt.netlify.app
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://satistrain-bolt.netlify.app/sitemap.xml
+
+# Disallow crawling of authentication callback pages
+Disallow: /auth/callback/
+
+# Disallow crawling of API routes (if any)
+Disallow: /api/
+
+# Allow crawling of main sections
+Allow: /dashboard
+Allow: /courses
+Allow: /simulator
+Allow: /microlearning
+Allow: /achievements
+Allow: /leaderboard
+Allow: /certificates
+Allow: /auth/login
+Allow: /auth/register
+
+# Crawl delay (optional - be respectful to server resources)
+Crawl-delay: 1
+
+# Block specific bots if needed (uncomment if necessary)
+# User-agent: BadBot
+# Disallow: /

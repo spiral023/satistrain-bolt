@@ -1,0 +1,105 @@
+{
+  "name": "SatisTrain - KI-gestützte Kundenservice-Schulungen",
+  "short_name": "SatisTrain",
+  "description": "Revolutioniere dein Kundenservice-Training mit KI-gestützten Simulationen, Gamification und personalisierten Lernpfaden.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "de",
+  "dir": "ltr",
+  "categories": ["education", "business", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "SatisTrain Dashboard"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "SatisTrain Mobile View"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Gehe zum Dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/shortcut-dashboard.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Kurse",
+      "short_name": "Kurse",
+      "description": "Durchsuche verfügbare Kurse",
+      "url": "/courses",
+      "icons": [
+        {
+          "src": "/shortcut-courses.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Simulator",
+      "short_name": "Simulator",
+      "description": "Starte KI-Simulation",
+      "url": "/simulator",
+      "icons": [
+        {
+          "src": "/shortcut-simulator.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
+}
