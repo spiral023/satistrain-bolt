@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Database } from '@/lib/database.types';
+import { ButtonLoading, CourseGridSkeleton } from '@/components/ui/loading-states';
+import { ErrorDisplay, InlineError } from '@/components/ui/error-display';
 import {
   BookOpen,
   Clock,
@@ -30,6 +32,9 @@ interface CourseGridProps {
   courses?: Course[];
   type: 'enrolled' | 'available';
   onEnroll?: (courseId: string) => void;
+  loading?: boolean;
+  error?: Error | null;
+  onRetry?: () => void;
 }
 
 const statusConfig = {
@@ -81,19 +86,51 @@ const difficultyColors = {
   5: 'bg-red-500/10 text-red-500',
 };
 
-export function CourseGrid({ enrollments, courses, type, onEnroll }: CourseGridProps) {
+export function CourseGrid({ 
+  enrollments, 
+  courses, 
+  type, 
+  onEnroll, 
+  loading = false,
+  error = null,
+  onRetry 
+}: CourseGridProps) {
   const [loadingEnroll, setLoadingEnroll] = useState<string | null>(null);
+  const [enrollError, setEnrollError] = useState<string | null>(null);
 
   const handleEnroll = async (courseId: string) => {
     if (!onEnroll) return;
     
     setLoadingEnroll(courseId);
+    setEnrollError(null);
+    
     try {
       await onEnroll(courseId);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Einschreibung fehlgeschlagen';
+      setEnrollError(errorMessage);
     } finally {
       setLoadingEnroll(null);
     }
   };
+
+  // Show loading skeleton
+  if (loading) {
+    return <CourseGridSkeleton count={type === 'enrolled' ? 3 : 6} />;
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="py-12">
+        <ErrorDisplay 
+          error={error} 
+          onRetry={onRetry}
+          className="max-w-md mx-auto"
+        />
+      </div>
+    );
+  }
 
   if (type === 'enrolled' && enrollments) {
     return (
@@ -150,18 +187,18 @@ export function CourseGrid({ enrollments, courses, type, onEnroll }: CourseGridP
                   <Progress value={status.progress} className="h-2" />
                 </div>
 
-                <div className="flex gap-2">
-                  <Button asChild className="flex-1">
-                    <Link href={`/courses/${enrollment.course_id}`}>
-                      {enrollment.status === 'completed' ? 'Wiederholen' : 'Fortsetzen'}
-                    </Link>
+              <div className="flex gap-2">
+                <Button asChild className="flex-1">
+                  <Link href={`/courses/${enrollment.course_id}`}>
+                    {enrollment.status === 'completed' ? 'Wiederholen' : 'Fortsetzen'}
+                  </Link>
+                </Button>
+                {enrollment.status === 'completed' && (
+                  <Button variant="outline" size="sm">
+                    <Star className="h-4 w-4" />
                   </Button>
-                  {enrollment.status === 'completed' && (
-                    <Button variant="outline" size="sm">
-                      <Star className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+                )}
+              </div>
 
                 {enrollment.status === 'completed' && enrollment.completed_at && (
                   <div className="text-xs text-muted-foreground">
@@ -233,13 +270,27 @@ export function CourseGrid({ enrollments, courses, type, onEnroll }: CourseGridP
                 </ul>
               </div>
 
-              <Button 
-                onClick={() => handleEnroll(course.id)}
-                disabled={loadingEnroll === course.id}
-                className="w-full"
-              >
-                {loadingEnroll === course.id ? 'Einschreiben...' : 'Jetzt einschreiben'}
-              </Button>
+              <div className="space-y-2">
+                {enrollError && (
+                  <InlineError 
+                    error={enrollError} 
+                    size="sm"
+                    onRetry={() => setEnrollError(null)}
+                  />
+                )}
+                <Button 
+                  onClick={() => handleEnroll(course.id)}
+                  disabled={loadingEnroll === course.id}
+                  className="w-full"
+                >
+                  <ButtonLoading 
+                    isLoading={loadingEnroll === course.id}
+                    loadingText="Einschreiben..."
+                  >
+                    Jetzt einschreiben
+                  </ButtonLoading>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}

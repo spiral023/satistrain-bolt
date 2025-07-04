@@ -15,6 +15,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/use-auth';
 import { coursesApi, EnrollmentWithCourse } from '@/lib/api/courses';
 import { Database } from '@/lib/database.types';
+import { useAsync } from '@/hooks/use-async';
+import { ErrorDisplay } from '@/components/ui/error-display';
+import { toast } from 'sonner';
 import {
   BookOpen,
   Clock,
@@ -30,48 +33,67 @@ type Course = Database['public']['Tables']['course']['Row'];
 
 export default function CoursesPage() {
   const { user } = useAuth();
-  const [enrollments, setEnrollments] = useState<EnrollmentWithCourse[]>([]);
-  const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all');
 
-  const loadData = useCallback(async () => {
-    if (!user) return;
-    try {
-      setLoading(true);
+  // Load enrollments with error handling
+  const enrollmentsQuery = useAsync(
+    () => user ? coursesApi.getUserEnrollments(user.id) : Promise.resolve([]),
+    {
+      onError: (error) => {
+        toast.error('Fehler beim Laden der Einschreibungen: ' + error.message);
+      }
+    }
+  );
+
+  // Load available courses with error handling
+  const coursesQuery = useAsync(
+    async () => {
+      if (!user) return [];
       const [userEnrollments, allCourses] = await Promise.all([
         coursesApi.getUserEnrollments(user.id),
         coursesApi.getCourses(),
       ]);
 
-      setEnrollments(userEnrollments);
-
       // Filter out courses user is already enrolled in
       const enrolledCourseIds = userEnrollments.map(e => e.course.id);
-      const available = allCourses.filter(course => !enrolledCourseIds.includes(course.id));
-      setAvailableCourses(available);
-    } catch (error) {
-      console.error('Error loading courses:', error);
-    } finally {
-      setLoading(false);
+      return allCourses.filter(course => !enrolledCourseIds.includes(course.id));
+    },
+    {
+      onError: (error) => {
+        toast.error('Fehler beim Laden der Kurse: ' + error.message);
+      }
+    }
+  );
+
+  // Load data when user changes
+  useEffect(() => {
+    if (user) {
+      enrollmentsQuery.execute();
+      coursesQuery.execute();
     }
   }, [user]);
-
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
 
   const handleEnroll = async (courseId: string) => {
     if (!user) return;
     
     try {
       await coursesApi.enrollInCourse(user.id, courseId);
-      await loadData(); // Reload data to update UI
+      toast.success('Erfolgreich eingeschrieben!');
+      // Reload data to update UI
+      enrollmentsQuery.execute();
+      coursesQuery.execute();
     } catch (error) {
-      console.error('Error enrolling in course:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Einschreibung fehlgeschlagen';
+      toast.error(errorMessage);
+      throw error; // Re-throw for component error handling
     }
   };
+
+  const enrollments = enrollmentsQuery.data || [];
+  const availableCourses = coursesQuery.data || [];
+  const loading = enrollmentsQuery.loading || coursesQuery.loading;
+  const error = enrollmentsQuery.error || coursesQuery.error;
 
   const filteredEnrollments = enrollments.filter(enrollment => {
     const matchesSearch = enrollment.course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -151,25 +173,13 @@ export default function CoursesPage() {
               </TabsList>
 
               <TabsContent value="enrolled" className="space-y-6">
-                {loading ? (
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {[...Array(6)].map((_, i) => (
-                      <Card key={i} className="animate-pulse">
-                        <CardContent className="p-6">
-                          <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                          <div className="h-3 bg-muted rounded w-1/2 mb-4"></div>
-                          <div className="h-2 bg-muted rounded w-full mb-2"></div>
-                          <div className="h-8 bg-muted rounded w-full"></div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <CourseGrid 
-                    enrollments={filteredEnrollments}
-                    type="enrolled"
-                  />
-                )}
+                <CourseGrid 
+                  enrollments={filteredEnrollments}
+                  type="enrolled"
+                  loading={enrollmentsQuery.loading}
+                  error={enrollmentsQuery.error}
+                  onRetry={() => enrollmentsQuery.execute()}
+                />
               </TabsContent>
 
               <TabsContent value="available" className="space-y-6">
@@ -177,6 +187,9 @@ export default function CoursesPage() {
                   courses={filteredAvailableCourses}
                   type="available"
                   onEnroll={handleEnroll}
+                  loading={coursesQuery.loading}
+                  error={coursesQuery.error}
+                  onRetry={() => coursesQuery.execute()}
                 />
               </TabsContent>
 
