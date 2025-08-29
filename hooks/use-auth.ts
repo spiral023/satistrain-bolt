@@ -8,13 +8,14 @@ export function useAuth() {
   const { user, isAuthenticated, loading, setUser, setLoading } = useUserStore();
 
   useEffect(() => {
-    let mounted = true;
+    const controller = new AbortController();
+    const signal = controller.signal;
 
-    // Check for existing session
+    // Check for existing session with proper race condition handling
     const checkSession = async () => {
       try {
         const session = await authService.getSession();
-        if (mounted) {
+        if (!signal.aborted) {
           if (session?.user) {
             setUser({
               id: session.user.id,
@@ -29,7 +30,7 @@ export function useAuth() {
         }
       } catch (error) {
         console.error('Error checking session:', error);
-        if (mounted) {
+        if (!signal.aborted) {
           setLoading(false);
         }
       }
@@ -37,17 +38,17 @@ export function useAuth() {
 
     checkSession();
 
-    // Listen for auth changes
+    // Listen for auth changes with proper cleanup
     const { data: { subscription } } = authService.onAuthStateChange((authUser) => {
-      if (mounted) {
-        if (authUser) {
+      if (!signal.aborted) {
+        if (authUser?.email) {
           setUser({
             id: authUser.id,
             email: authUser.email,
-            locale: authUser.locale || 'de',
+            locale: authUser.user_metadata?.locale || 'de',
             deleted_at: undefined,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            created_at: authUser.created_at || new Date().toISOString(),
+            updated_at: authUser.updated_at || authUser.created_at || new Date().toISOString(),
           });
         } else {
           setUser(null);
@@ -57,7 +58,8 @@ export function useAuth() {
     });
 
     return () => {
-      mounted = false;
+      // Comprehensive cleanup
+      controller.abort();
       subscription.unsubscribe();
     };
   }, [setUser, setLoading]);

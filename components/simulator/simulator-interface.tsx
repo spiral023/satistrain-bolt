@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,7 +48,8 @@ interface Message {
   feedback?: string;
 }
 
-const aiPersonalities = {
+// Move static data outside component to prevent recreation on every render
+const AI_PERSONALITIES = {
   frustrated: {
     name: 'Frustrierter Kunde',
     avatar: '😤',
@@ -116,7 +118,8 @@ const aiPersonalities = {
   },
 };
 
-export function SimulatorInterface({ scenario, mode, onEndSimulation }: SimulatorInterfaceProps) {
+// Memoized component to prevent unnecessary re-renders
+export const SimulatorInterface = React.memo<SimulatorInterfaceProps>(function SimulatorInterface({ scenario, mode, onEndSimulation }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -134,10 +137,19 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
   const [tipMessageCount, setTipMessageCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout>();
+  const abortControllerRef = useRef<AbortController>();
 
-  const aiPersonality = aiPersonalities[scenario?.personality as keyof typeof aiPersonalities || 'polite'];
+  // Memoize aiPersonality to prevent recreation
+  const aiPersonality = useMemo(() => 
+    AI_PERSONALITIES[scenario?.personality as keyof typeof AI_PERSONALITIES || 'polite'],
+    [scenario?.personality]
+  );
 
   useEffect(() => {
+    // Create AbortController for cleanup
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
     // Initialize conversation
     const initialMessage: Message = {
       id: '1',
@@ -153,20 +165,29 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
       timestamp: new Date(),
     };
 
-    setMessages([initialMessage, aiGreeting]);
-    setCurrentTip(getContextualTip(aiPersonality, 0)); // Initial tip
+    if (!signal.aborted) {
+      setMessages([initialMessage, aiGreeting]);
+      setCurrentTip(getContextualTip(aiPersonality, 0)); // Initial tip
+    }
 
-    // Start timer
+    // Start timer with proper cleanup
     timerRef.current = setInterval(() => {
-      setSessionTime(prev => prev + 1);
+      if (!signal.aborted) {
+        setSessionTime(prev => prev + 1);
+      }
     }, 1000);
 
     return () => {
+      // Comprehensive cleanup
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
       if (timerRef.current) {
         clearInterval(timerRef.current);
+        timerRef.current = undefined;
       }
     };
-  }, [scenario]);
+  }, [scenario, aiPersonality]);
 
   useEffect(() => {
     scrollToBottom();
@@ -176,11 +197,12 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
     }
   }, [messages, aiPersonality]);
 
-  const scrollToBottom = () => {
+  // Memoize callback functions to prevent unnecessary re-renders
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = useCallback(async () => {
     if (!currentMessage.trim()) return;
 
     const userMessage: Message = {
@@ -212,9 +234,9 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
       setCurrentScore(score);
       setIsTyping(false);
     }, 1500 + Math.random() * 1000);
-  };
+  }, [currentMessage, scenario]);
 
-  const generateAIResponse = (userMessage: string, scenario: any) => {
+  const generateAIResponse = useCallback((userMessage: string, scenario: any) => {
     const responses = {
       frustrated: [
         'Das ist nicht das, was ich hören wollte! Können Sie mir nicht richtig helfen?',
@@ -280,9 +302,9 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
 
     const personalityResponses = responses[scenario?.personality as keyof typeof responses || 'polite'];
     return personalityResponses[Math.floor(Math.random() * personalityResponses.length)];
-  };
+  }, []);
 
-  const calculateMessageScore = (message: string) => {
+  const calculateMessageScore = useCallback((message: string) => {
     // Erweiterte Bewertungsalgorithmus basierend auf Nachrichteninhalt
     const empathyWords = [
       'verstehe', 'entschuldigung', 'bedauere', 'nachvollziehen', 'tut mir leid',
@@ -334,9 +356,9 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
     const overall = Math.round((empathy + clarity + helpfulness) / 3);
 
     return { empathy, clarity, helpfulness, overall };
-  };
+  }, []);
 
-  const generateFeedback = (score: any) => {
+  const generateFeedback = useCallback((score: any) => {
     const feedbackOptions = {
       excellent: [
         'Ausgezeichnet! Perfekte Balance aus Empathie, Klarheit und Hilfsbereitschaft.',
@@ -393,9 +415,9 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
     }
 
     return baseFeedback + specificTips;
-  };
+  }, []);
 
-  const getContextualTip = (personality: any, messageCount: number) => {
+  const getContextualTip = useCallback((personality: any, messageCount: number) => {
     const generalTips = [
       'Zeigen Sie Verständnis für die Situation des Kunden und bieten Sie konkrete Hilfe an.',
       'Verwenden Sie eine freundliche und professionelle Sprache.',
@@ -457,20 +479,25 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
     } else {
       return generalTips[Math.floor(Math.random() * generalTips.length)];
     }
-  };
+  }, []);
 
-  const formatTime = (seconds: number) => {
+  const formatTime = useCallback((seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
+  }, []);
 
-  const handleEndSession = () => {
+  const handleEndSession = useCallback(() => {
+    // Clean up resources before ending
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = undefined;
     }
     onEndSimulation();
-  };
+  }, [onEndSimulation]);
 
   return (
     <div className="h-full flex flex-col">
@@ -681,4 +708,6 @@ export function SimulatorInterface({ scenario, mode, onEndSimulation }: Simulato
       </div>
     </div>
   );
-}
+});
+
+SimulatorInterface.displayName = 'SimulatorInterface';

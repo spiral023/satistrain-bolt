@@ -7,6 +7,11 @@ export interface AuthUser {
   id: string;
   email: string;
   locale?: string;
+  user_metadata?: {
+    locale?: string;
+  };
+  created_at?: string;
+  updated_at?: string;
 }
 
 export const authService = {
@@ -37,11 +42,17 @@ export const authService = {
 
   // Sign out
   async signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-    
-    // Clear local state
-    useUserStore.getState().logout();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } finally {
+      // Ensure state is cleared even if signOut fails
+      try {
+        useUserStore.getState().logout();
+      } catch (storeError) {
+        console.error('Error clearing user state:', storeError);
+      }
+    }
   },
 
   // Get current session

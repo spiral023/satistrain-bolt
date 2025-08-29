@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,8 @@ import {
   Star,
 } from 'lucide-react';
 
-const stats = [
+// Move static data outside component to prevent recreation on every render
+const STATS_DATA = [
   {
     title: 'Aktive Kurse',
     value: '3',
@@ -49,7 +51,7 @@ const stats = [
 
 type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
 
-const achievements: {
+const ACHIEVEMENTS_DATA: {
   name: string;
   description: string;
   rarity: Rarity;
@@ -79,19 +81,20 @@ const achievements: {
   },
 ];
 
-const rarityColors: Record<Rarity, string> = {
+const RARITY_COLORS: Record<Rarity, string> = {
   common: 'bg-gray-500/20 text-gray-300',
   rare: 'bg-blue-500/20 text-blue-300',
   epic: 'bg-purple-500/20 text-purple-300',
   legendary: 'bg-yellow-500/20 text-yellow-300',
 };
 
-export function StatsCards() {
+// Memoized component to prevent unnecessary re-renders
+export const StatsCards = React.memo(function StatsCards() {
   return (
     <div className="space-y-6">
       {/* Hauptstatistiken */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
+        {STATS_DATA.map((stat) => (
           <Card key={stat.title} className="bg-card/50 backdrop-blur-sm">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -157,7 +160,7 @@ export function StatsCards() {
             <Badge variant="outline">12 / 25 Abzeichen</Badge>
           </div>
           <div className="space-y-3">
-            {achievements.map((achievement, index) => (
+            {ACHIEVEMENTS_DATA.map((achievement, index) => (
               <div
                 key={index}
                 className={`p-3 rounded-lg border transition-all duration-200 ${
@@ -187,7 +190,7 @@ export function StatsCards() {
                   <div className="flex items-center gap-2">
                     <Badge 
                       variant="outline" 
-                      className={rarityColors[achievement.rarity]}
+                      className={RARITY_COLORS[achievement.rarity]}
                     >
                       {achievement.rarity}
                     </Badge>
@@ -213,4 +216,6 @@ export function StatsCards() {
       </Card>
     </div>
   );
-}
+});
+
+StatsCards.displayName = 'StatsCards';

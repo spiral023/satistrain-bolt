@@ -33,7 +33,7 @@ export const gamificationApi = {
 
   // Award badge to user
   async awardBadge(userId: string, badgeId: string, awardedBy?: string) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('badge_award')
       .insert({
         user_id: userId,
@@ -58,7 +58,7 @@ export const gamificationApi = {
 
     if (progressError) throw progressError;
 
-    const progressPoints = (progressData || []).reduce((total, progress) => {
+    const progressPoints = (progressData || []).reduce((total: number, progress: any) => {
       return total + (progress.score || 0);
     }, 0);
 

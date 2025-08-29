@@ -11,7 +11,7 @@ export const simulationsApi = {
     scenarioType: string = 'customer_complaint',
     metadata: Record<string, any> = {}
   ): Promise<SimulationSession> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('simulation_session')
       .insert({
         user_id: userId,
@@ -61,7 +61,7 @@ export const simulationsApi = {
     score?: number,
     feedback: Record<string, any> = {}
   ): Promise<SimulationStep> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('simulation_step')
       .insert({
         session_id: sessionId,
@@ -86,7 +86,7 @@ export const simulationsApi = {
     resolutionScore?: number,
     communicationScore?: number
   ) {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('simulation_session')
       .update({
         completed_at: new Date().toISOString(),
@@ -126,10 +126,10 @@ export const simulationsApi = {
       };
     }
 
-    const averageScore = sessions.reduce((sum, s) => sum + (s.total_score || 0), 0) / totalSessions;
-    const averageEmpathy = sessions.reduce((sum, s) => sum + (s.empathy_score || 0), 0) / totalSessions;
-    const averageResolution = sessions.reduce((sum, s) => sum + (s.resolution_score || 0), 0) / totalSessions;
-    const averageCommunication = sessions.reduce((sum, s) => sum + (s.communication_score || 0), 0) / totalSessions;
+    const averageScore = sessions.reduce((sum: number, s: any) => sum + (s.total_score || 0), 0) / totalSessions;
+    const averageEmpathy = sessions.reduce((sum: number, s: any) => sum + (s.empathy_score || 0), 0) / totalSessions;
+    const averageResolution = sessions.reduce((sum: number, s: any) => sum + (s.resolution_score || 0), 0) / totalSessions;
+    const averageCommunication = sessions.reduce((sum: number, s: any) => sum + (s.communication_score || 0), 0) / totalSessions;
 
     return {
       totalSessions,

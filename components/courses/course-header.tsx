@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -13,20 +14,54 @@ import {
   MoreHorizontal,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Database } from '@/lib/database.types';
+
+// Proper TypeScript interfaces
+type Course = Database['public']['Tables']['course']['Row'] & {
+  module?: Array<{
+    id: string;
+    title: string;
+    lesson?: Array<{
+      id: string;
+      title: string;
+    }>;
+  }>;
+};
+
+type Enrollment = Database['public']['Tables']['enrollment']['Row'];
+type Progress = Database['public']['Tables']['progress']['Row'];
 
 interface CourseHeaderProps {
-  course: any;
-  enrollment: any;
-  progress: any[];
+  course: Course;
+  enrollment: Enrollment;
+  progress: Progress[];
 }
 
-export function CourseHeader({ course, enrollment, progress }: CourseHeaderProps) {
+/**
+ * Optimized CourseHeader component with memoized calculations
+ * Prevents unnecessary re-renders when parent state changes
+ */
+export const CourseHeader = React.memo<CourseHeaderProps>(({ course, enrollment, progress }) => {
   const router = useRouter();
   
-  const totalLessons = course.module?.reduce((sum: number, module: any) => 
-    sum + (module.lesson?.length || 0), 0) || 0;
-  const completedLessons = progress.filter(p => p.completed_at).length;
-  const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+  // Memoize expensive calculations
+  const { totalLessons, completedLessons, progressPercentage } = React.useMemo(() => {
+    const total = course.module?.reduce((sum: number, module) => 
+      sum + (module.lesson?.length || 0), 0) || 0;
+    const completed = progress.filter(p => p.completed_at).length;
+    const percentage = total > 0 ? (completed / total) * 100 : 0;
+    
+    return {
+      totalLessons: total,
+      completedLessons: completed,
+      progressPercentage: percentage,
+    };
+  }, [course.module, progress]);
+  
+  // Memoize status badge text
+  const enrollmentStatus = React.useMemo(() => {
+    return enrollment.status === 'completed' ? 'Abgeschlossen' : 'In Bearbeitung';
+  }, [enrollment.status]);
 
   return (
     <header className="border-b border-border bg-card/50 backdrop-blur-sm">
@@ -46,7 +81,7 @@ export function CourseHeader({ course, enrollment, progress }: CourseHeaderProps
             
             <div className="flex items-center gap-2">
               <Badge variant="outline">
-                {enrollment.status === 'completed' ? 'Abgeschlossen' : 'In Bearbeitung'}
+                {enrollmentStatus}
               </Badge>
               <Badge variant="outline">
                 v{course.version}
@@ -106,4 +141,6 @@ export function CourseHeader({ course, enrollment, progress }: CourseHeaderProps
       </div>
     </header>
   );
-}
+});
+
+CourseHeader.displayName = 'CourseHeader';

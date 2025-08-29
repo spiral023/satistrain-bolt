@@ -1,6 +1,7 @@
 import { supabase } from '../supabase-client';
 import { Database } from '../database.types';
 import { NetworkError, NotFoundError, AuthenticationError, ValidationError } from '../error-types';
+import { withRetry, PerformanceMonitor, DEFAULT_RETRY_CONFIG } from '../api-utils';
 
 type Course = Database['public']['Tables']['course']['Row'];
 type Module = Database['public']['Tables']['module']['Row'];
@@ -41,21 +42,27 @@ function handleSupabaseError(error: any): never {
 }
 
 export const coursesApi = {
-  // Get all active courses
+  /**
+   * Get all active courses with retry logic and performance monitoring
+   * @returns Promise resolving to array of active courses
+   */
   async getCourses(): Promise<Course[]> {
-    try {
-      const { data, error } = await supabase
-        .from('course')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false });
+    return withRetry(
+      () => PerformanceMonitor.measure('getCourses', async () => {
+        const { data, error } = await supabase
+          .from('course')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
 
-      if (error) handleSupabaseError(error);
-      return data || [];
-    } catch (error) {
-      if (error instanceof Error) throw error;
-      handleSupabaseError(error);
-    }
+        if (error) handleSupabaseError(error);
+        return data || [];
+      }),
+      {
+        ...DEFAULT_RETRY_CONFIG,
+        maxAttempts: 2, // Reduce retries for list operations
+      }
+    );
   },
 
   // Get course with modules and lessons
@@ -129,7 +136,7 @@ export const coursesApi = {
         throw new ValidationError('Sie sind bereits in diesem Kurs eingeschrieben');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('enrollment')
         .insert({
           user_id: userId,
@@ -158,7 +165,7 @@ export const coursesApi = {
         throw new ValidationError('Alle Parameter sind erforderlich');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('enrollment')
         .update({ status })
         .eq('user_id', userId)
@@ -220,7 +227,7 @@ export const coursesApi = {
         throw new ValidationError('Punktzahl muss zwischen 0 und 100 liegen');
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('progress')
         .upsert({
           user_id: userId,
